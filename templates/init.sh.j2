@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+set -x
+
+export MAQ="{{ hostname }}"
+export FQDN="{{ hostname }}.{{ domain }}"
+export LVM_NAME="vol{{ hostname }}"
+export ADM_USER="{{ admin.name }}"
+export ADM_PASS="{{ admin.password }}"
+export SSH_KEY_URL="{{ admin.sshkey }}"
+export SSH_PORT="{{ ssh_port }}"
+export ENCRYPT_PASS_ROOT="{{ encrypt_pass_root }}"
+export ENCRYPT_PASS_FILES="{{ encrypt_pass_root }}"
+
+export KEYMAP='us'
+export KEYMAP_EXT='us'
+export LANGUAGE='en_US.UTF-8'
+export TIMEZONE='{{ timezone }}'
+
+export device="/dev/nvme0n1"
+export install_dir="/mnt"
+
+export boot_device="${device}p1"
+export boot_partition="${device}p1"
+export root_device="${device}p2"
+export root_partition="/dev/mapper/${LVM_NAME}-root"
+export data_partition="/dev/mapper/${LVM_NAME}-data"
+export swap_partition="/dev/mapper/${LVM_NAME}-swap"
+export grub_swap_param="resume=${swap_partition}"
+
+
+moucho_install/install.sh
+

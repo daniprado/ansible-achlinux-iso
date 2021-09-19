@@ -1,0 +1,83 @@
+---
+
+  - name: Create working directory
+    file:
+      path: "{{ working_path }}"
+      state: directory
+
+  - name: Check if ISO exists
+    stat:
+      path: "{{ iso_path }}"
+    register: localISO
+
+  - name: Download ISO
+    get_url:
+      url:  "{{ iso_url }}"
+      dest: "{{ iso_path }}"
+      mode: 0644
+    when:
+      - localISO.stat.exists != true
+
+  - name: Mount ISO
+    mount:
+      path: "{{ working_path }}/iso"
+      src: "{{ iso_path }}"
+      opts: loop
+      fstype: iso9660
+      state: mounted
+
+  - name: Copy ISO contents to working directory
+    copy:
+      src: "{{ working_path }}/iso/"
+      dest: "{{ working_path }}/isocopy/"
+
+  - name: Unmount ISO
+    mount:
+      path: "{{ working_path }}/iso"
+      state: absent
+
+  - name: Create install directories
+    file:
+      path: "{{ item }}"
+      state: directory
+    loop:
+      - "{{ install_path }}"
+      - "{{ install_path }}/post_install"
+      - "{{ install_path }}/post_install/inventory"
+      - "{{ install_path }}/post_install/inventory/group_vars"
+      - "{{ install_path }}/post_install/inventory/host_vars"
+
+  - name: Copy install script
+    template:
+      src: "init.sh.j2"
+      dest: "{{ install_path }}/init.sh"
+      mode: 0755
+
+  - name: Copy moucho install files
+    copy:
+      src: "moucho_install"
+      dest: "{{ install_path }}"
+
+  - name: Allow script executions
+    file:
+      dest: "{{ item }}"
+      mode: "a+x"
+    with_fileglob:
+      - "{{ install_path }}/moucho_install/*.sh"
+
+  - name: Copy setup ansible playbook
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dst }}"
+      mode: 0644
+    loop:
+      - { src: "./moucho.yml", dst: "{{ install_path }}/post_install/moucho.yml" }
+      - { src: "./roles/setup-desktop", dst: "{{ install_path }}/post_install" }
+      - { src: "./inventory/group_vars/all.yml", dst: "{{ install_path }}/post_install/inventory/group_vars/all.yml" }
+      - { src: "./inventory/host_vars/moucho.yml", dst: "{{ install_path }}/post_install/inventory/host_vars/moucho.yml" }
+
+  - name: Create custom ISO
+    command: "xorrisofs -relaxed-filenames -J -R -o {{ iso_result_path }} -volid {{ iso_label }} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -eltorito-alt-boot -e /EFI/archiso/efiboot.img -no-emul-boot -isohybrid-gpt-basdat {{ working_path }}/isocopy/"
+    args:
+      chdir: "{{ working_path }}/isocopy/"
+

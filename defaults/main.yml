@@ -1,0 +1,20 @@
+---
+
+working_path: "/tmp/metal_provision"
+iso_file: "archlinux-2021.09.01-x86_64.iso"
+iso_url: "https://arch.mirrors.lavatech.top/iso/2021.09.01//{{ iso_file }}"
+iso_label: "ARCH_202109"
+iso_path: "{{ working_path }}/{{ iso_file }}"
+iso_result_path: "{{ working_path }}/argallar-{{ iso_file }}"
+install_path: "{{ working_path }}/isocopy/moucho"
+timezone: "Europe/Amsterdam"
+ssh_port: 22
+
+hostname: test
+domain: argallar.org
+encrypt_pass_root: "CHANGEME"
+admin:
+  name: "admin"
+  password: "CHANGEME"
+  sshkey: "https://raw.githubusercontent.com/daniprado/ansible-achlinux-iso/main/README.md"
+
