@@ -1,4 +1,4 @@
-[#](#) ansible-archlinux-iso
+# ansible-archlinux-iso
 
 Ansible role to create de Arch Linux ISO file able to install my desktop environment.
 
